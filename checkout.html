@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Café POS System</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI;
+    display:flex;
+    background:#fff8e7;
+}
+
+/* MENU */
+.main{
+    flex:1;
+    padding:25px;
+}
+
+h1{
+    color:#5c3d00;
+}
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    cursor:pointer;
+    transition:0.2s;
+    text-align:center;
+}
+
+.card:hover{
+    transform:scale(1.03);
+    background:#fff3cd;
+}
+
+.card h3{
+    color:#5c3d00;
+    margin:10px 0;
+}
+
+.price{
+    color:#c49b00;
+    font-weight:bold;
+}
+
+/* ORDER */
+.order{
+    width:300px;
+    background:#fff3cd;
+    padding:20px;
+    border-left:2px solid #f0d98a;
+}
+
+.order h2{
+    color:#5c3d00;
+}
+
+.item{
+    display:flex;
+    justify-content:space-between;
+    background:white;
+    padding:8px;
+    margin-bottom:8px;
+    border-radius:8px;
+}
+
+.remove{
+    background:red;
+    color:white;
+    border:none;
+    cursor:pointer;
+    padding:3px 6px;
+    border-radius:5px;
+}
+
+.total{
+    font-size:18px;
+    font-weight:bold;
+    margin-top:10px;
+    color:#5c3d00;
+}
+</style>
+</head>
+
+<body>
+
+<!-- MENU -->
+<div class="main">
+    <h1>🍰 Café Menu</h1>
+    <div class="products" id="menu"></div>
+</div>
+
+<!-- ORDER -->
+<div class="order">
+    <h2>🧾 Order</h2>
+    <div id="orderList"></div>
+    <div class="total" id="total">Total: ₱0</div>
+</div>
+
+<script>
+
+/* MENU ITEMS (NO IMAGES) */
+const menuItems = {
+    cake1: { name:"Chocolate Cake", price:180 },
+    cake2: { name:"Strawberry Cake", price:190 },
+    cake3: { name:"Cheesecake", price:200 },
+    cake4: { name:"Red Velvet", price:210 },
+    cake5: { name:"Mango Cake", price:185 },
+    cake6: { name:"Mocha Cake", price:195 }
+};
+
+let order = [];
+
+const menu = document.getElementById("menu");
+const orderList = document.getElementById("orderList");
+const total = document.getElementById("total");
+
+/* DISPLAY MENU */
+Object.keys(menuItems).forEach(key=>{
+    let item = menuItems[key];
+
+    let div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+        <h3>${item.name}</h3>
+        <p class="price">₱${item.price}</p>
+    `;
+
+    div.onclick = ()=> addToOrder(key);
+    menu.appendChild(div);
+});
+
+/* ADD ORDER */
+function addToOrder(key){
+    let item = menuItems[key];
+
+    let existing = order.find(o => o.key === key);
+
+    if(existing){
+        existing.qty++;
+    }else{
+        order.push({ key:key, name:item.name, price:item.price, qty:1 });
+    }
+
+    renderOrder();
+}
+
+/* REMOVE ITEM */
+function removeItem(index){
+    order.splice(index,1);
+    renderOrder();
+}
+
+/* RENDER ORDER */
+function renderOrder(){
+    let sum = 0;
+    let html = "";
+
+    order.forEach((o,i)=>{
+        let subtotal = o.price * o.qty;
+        sum += subtotal;
+
+        html += `
+        <div class="item">
+            ${o.name} x${o.qty}
+            <div>
+                ₱${subtotal}
+                <button class="remove" onclick="removeItem(${i})">x</button>
+            </div>
+        </div>`;
+    });
+
+    orderList.innerHTML = html || "No orders yet";
+    total.innerText = "Total: ₱" + sum;
+}
+
+</script>
+
+</body>
+</html>

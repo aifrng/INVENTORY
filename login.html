@@ -1,0 +1,267 @@
+<div class="login-card">
+    <h2>Login</h2>
+
+
+    <!-- Username Field -->
+    <div class="input-box">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="Enter username">
+    </div>
+
+
+    <!-- Password Field with Show Button Inside -->
+    <div class="input-box">
+        <label>Password</label>
+
+
+        <div class="password-box">
+            <input type="password" id="password" placeholder="Enter password">
+            <button type="button" class="toggle-btn" onclick="togglePassword()">Show</button>
+        </div>
+        <div id="passwordValidation"></div>
+    </div>
+
+
+    <!-- Buttons -->
+    <button class="login-btn" onclick="login()">Login</button>
+    <button class="register-btn" id="registerBtn" onclick="register()">Register</button>
+
+
+    <p id="message"></p>
+</div>
+
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: Arial, sans-serif;
+        background: #eadbb1;
+    }
+
+
+    .login-card {
+        width: 300px;
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px #d4af37;
+    }
+
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+
+    .input-box {
+        margin-bottom: 15px;
+    }
+
+
+    label {
+        font-size: 12px;
+        color: #d4af37;
+    }
+
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        outline: none;
+        font-size: 13px;
+    }
+
+
+    input.valid { border-color: #4CAF50; }
+    input.invalid { border-color: #f44336; }
+
+
+    /* Password with button inside */
+    .password-box {
+        position: relative;
+    }
+
+
+    .password-box input {
+        padding-right: 60px;
+    }
+
+
+    .toggle-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 12px;
+        color: #d4af37;
+        cursor: pointer;
+    }
+
+
+    .toggle-btn:hover {
+        text-decoration: underline;
+    }
+
+
+    #passwordValidation {
+        font-size: 11px;
+        margin-top: 3px;
+        min-height: 14px;
+        color: #f44336;
+    }
+
+
+    .login-btn, .register-btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        margin-top: 10px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+
+    .login-btn {
+        background: #d4af37;
+        color: white;
+    }
+
+
+    .register-btn {
+        background: transparent;
+        border: 1px solid #d4af37;
+    }
+
+
+    .register-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+
+    #message {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+</style>
+
+
+<script>
+    // Elements
+    const passwordInput = document.getElementById('password');
+    const registerBtn = document.getElementById('registerBtn');
+    const validationDiv = document.getElementById('passwordValidation');
+
+
+    /**
+     * Validates password - BLOCKS registration if ANY rule fails:
+     * 1. < 8 characters
+     * 2. Only integers  
+     * 3. No uppercase
+     * 4. No lowercase
+     */
+    function validatePassword(password) {
+        const errors = [];
+
+
+        if (password.length < 8) errors.push(' Password Should be more than 8 characters  and contain both uppercase and lowercase characters.');
+        if (/^\d+$/.test(password)) errors.push('• Not just numbers');
+        if (!/[A-Z]/.test(password)) errors.push('• Uppercase (A-Z)');
+        if (!/[a-z]/.test(password)) errors.push('• Lowercase (a-z)');
+
+
+        return { isValid: errors.length === 0, errors };
+    }
+
+
+    // Real-time validation (NO console logging here)
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const validation = validatePassword(password);
+       
+        if (password) {
+            this.className = validation.isValid ? 'valid' : 'invalid';
+            validationDiv.innerHTML = validation.isValid ? 'Valid Password!' : validation.errors[0];
+            registerBtn.disabled = !validation.isValid;
+        } else {
+            this.className = '';
+            validationDiv.innerHTML = '';
+            registerBtn.disabled = false;
+        }
+    });
+
+
+    function login() {
+        const user = document.getElementById("username").value.trim();
+        const pass = document.getElementById("password").value.trim();
+        const message = document.getElementById("message");
+
+
+        console.log("LOGIN - Username:", user);     // ✅ Console
+        console.log("LOGIN - Password:", pass);     // ✅ Console
+       
+        if (!user || !pass) {
+            message.textContent = "Please fill in all fields.";
+            message.style.color = "red";
+        } else if (user === "admin" && pass === "1234") {
+            message.textContent = "Login successful!";
+            message.style.color = "green";
+        } else {
+            message.textContent = "Invalid username or password.";
+            message.style.color = "red";
+        }
+    }
+
+
+    function register() {
+        const user = document.getElementById("username").value.trim();
+        const pass = document.getElementById("password").value.trim();
+        const message = document.getElementById("message");
+
+
+        console.log("REGISTER - Username:", user);  // ✅ Console - AFTER REGISTER
+        console.log("REGISTER - Password:", pass);  // ✅ Console - AFTER REGISTER
+
+
+        // FINAL CHECK - BLOCKS registration
+        const validation = validatePassword(pass);
+        if (!validation.isValid || !user) {
+            message.textContent = "❌ Fix password first!";
+            message.style.color = "red";
+            console.log("REGISTRATION BLOCKED"); // ✅ Console
+            return; // PREVENTS registration
+        }
+
+
+        console.log("REGISTRATION SUCCESS"); // ✅ Console
+        message.textContent = "✅ Registered!";
+        message.style.color = "green";
+    }
+
+
+    function togglePassword() {
+        const pass = document.getElementById("password");
+        const btn = document.querySelector(".toggle-btn");
+
+
+        if (pass.type === "password") {
+            pass.type = "text";
+            btn.textContent = "Hide";
+        } else {
+            pass.type = "password";
+            btn.textContent = "Show";
+        }
+    }
+</script>

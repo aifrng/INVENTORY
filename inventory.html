@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+</head>
+<body>
+    <div class="inventory-container">
+        <h1> Inventory Management System</h1>
+       
+        <!-- Add New Item Form -->
+        <div class="add-item-form">
+            <input type="text" id="itemName" placeholder="Item Name">
+            <input type="number" id="itemQuantity" placeholder="Quantity" min="0">
+            <button onclick="addItem()"> Add Item Here  </button>
+        </div>
+
+
+        <!-- Inventory Table -->
+        <div class="table-container">
+            <table id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryBody">
+                    <!-- Items will be added here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+
+        <div id="message"></div>
+    </div>
+
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #eadbb1 0%, #d4af37 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+
+        .inventory-container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+
+        h1 {
+            text-align: center;
+            color: #d4af37;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+
+        .add-item-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+
+        .add-item-form input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+
+        .add-item-form input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+
+        .add-item-form button {
+            padding: 12px 24px;
+            background: #d4af37;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+
+        .add-item-form button:hover {
+            background: #b8942f;
+            transform: translateY(-2px);
+        }
+
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+
+        th {
+            background: #d4af37;
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+
+        td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+
+        tr:hover {
+            background: #f8f8f8;
+        }
+
+
+        .quantity-cell {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+
+
+        .quantity-cell:hover {
+            background: #fff3cd;
+        }
+
+
+        .quantity-input {
+            display: none;
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+
+        .quantity-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+
+
+        #message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            min-height: 20px;
+        }
+
+
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+
+
+    <script>
+        let inventory = []; // Store inventory data
+        let editingIndex = -1; // Track which row is being edited
+
+
+        /**
+         * Add new item to inventory
+         */
+        function addItem() {
+            const nameInput = document.getElementById('itemName');
+            const qtyInput = document.getElementById('itemQuantity');
+            const message = document.getElementById('message');
+           
+            const name = nameInput.value.trim();
+            const quantity = parseInt(qtyInput.value) || 0;
+
+
+            if (!name) {
+                showMessage('Please enter item name', 'error');
+                return;
+            }
+
+
+            if (quantity < 0) {
+                showMessage('Quantity cannot be negative', 'error');
+                return;
+            }
+
+
+            // Add to inventory array
+            inventory.push({ name, quantity });
+            renderTable();
+           
+            // Clear form
+            nameInput.value = '';
+            qtyInput.value = '';
+           
+            showMessage(`✅ "${name}" added successfully!`, 'success');
+            console.log('Added item:', { name, quantity });
+        }
+
+
+        /**
+         * Render inventory table
+         */
+        function renderTable() {
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = '';
+
+
+            inventory.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>
+                        <div class="quantity-cell" ondblclick="editQuantity(${index})">
+                            <span class="quantity-display">${item.quantity}</span>
+                            <input type="number" class="quantity-input" id="qty-${index}"
+                                   value="${item.quantity}" min="0" onchange="saveQuantity(${index})">
+                        </div>
+                    </td>
+                    <td><button class="delete-btn" onclick="deleteItem(${index})">   Delete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+
+        /**
+         * Edit quantity - show input on double click
+         */
+        function editQuantity(index) {
+            // Hide display, show input
+            const cell = document.querySelector(`#inventoryBody tr:nth-child(${index + 1}) .quantity-cell`);
+            const display = cell.querySelector('.quantity-display');
+            const input = document.getElementById(`qty-${index}`);
+           
+            display.style.display = 'none';
+            input.style.display = 'inline-block';
+            input.focus();
+            input.select();
+           
+            editingIndex = index;
+        }
+
+
+        /**
+         * Save quantity after editing
+         */
+        function saveQuantity(index) {
+            const input = document.getElementById(`qty-${index}`);
+            const newQuantity = parseInt(input.value) || 0;
+           
+            if (newQuantity < 0) {
+                showMessage('Quantity cannot be negative', 'error');
+                input.value = inventory[index].quantity; // Revert
+                return;
+            }
+           
+            // Update inventory
+            inventory[index].quantity = newQuantity;
+            renderTable();
+           
+            showMessage(`✅ Quantity updated to ${newQuantity}`, 'success');
+            console.log('Updated quantity:', { name: inventory[index].name, quantity: newQuantity });
+        }
+
+
+        /**
+         * Delete item
+         */
+        function deleteItem(index) {
+            const itemName = inventory[index].name;
+            inventory.splice(index, 1);
+            renderTable();
+            showMessage(`🗑️ "${itemName}" deleted`, 'success');
+            console.log('Deleted item:', itemName);
+        }
+
+
+        /**
+         * Show message
+         */
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = type;
+           
+            setTimeout(() => {
+                message.textContent = '';
+                message.className = '';
+            }, 3000);
+        }
+
+
+        // Allow Enter key to add item
+        document.getElementById('itemQuantity').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addItem();
+        });
+
+
+        document.getElementById('itemName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('itemQuantity').focus();
+        });
+
+
+        // Initial render (empty table)
+        renderTable();
+    </script>
+</body>
+</html>
